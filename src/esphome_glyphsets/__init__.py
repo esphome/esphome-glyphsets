@@ -25,7 +25,7 @@ def unicodes_per_glyphset(glyphset_name: str) -> list[int]:
         return []
     character_set: set[int] = set()
     for line in nam_path.read_text().splitlines():
-        unicode = line.split(" ")[0]
+        unicode = line.partition(" ")[0]
         if unicode.startswith("0x"):
             character_set.add(int(unicode[2:], 16))
     return sorted(character_set)
