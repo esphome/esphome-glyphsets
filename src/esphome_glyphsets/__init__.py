@@ -3,10 +3,9 @@ __version__ = "0.0.1"
 import pathlib
 
 FILE_PATH = pathlib.Path(__file__).resolve()
-GLYPHSETS_BASE_PATH = FILE_PATH.parent / "glyphsets"
+GLYPHSETS_BASE_PATH = FILE_PATH.parent / "glyphsets" / "Lib" / "glyphsets"
 GLYPHSETS_DEFINITIONS_PATH = GLYPHSETS_BASE_PATH / "definitions"
-GLYPHSETS_RESULTS_PATH = GLYPHSETS_BASE_PATH / "results"
-GLYPHSETS_NAM_PATH = GLYPHSETS_BASE_PATH / "nam"
+GLYPHSETS_NAM_PATH = GLYPHSETS_BASE_PATH / "results" / "nam"
 
 
 def defined_glyphsets() -> list[str]:
@@ -14,7 +13,7 @@ def defined_glyphsets() -> list[str]:
     return sorted(
         f.stem
         for f in GLYPHSETS_DEFINITIONS_PATH.iterdir()
-        if (GLYPHSETS_DEFINITIONS_PATH / f).is_file() and f.suffix == "yaml"
+        if f.is_file() and f.suffix == ".yaml"
     )
 
 
