@@ -1,0 +1,21 @@
+# Changes here will be overwritten by Copier
+_commit: a283751
+_src_path: gh:browniebroke/pypackage-template
+add_me_as_contributor: false
+copyright_year: '2025'
+documentation: false
+email: hello@openhomefoundation.org
+full_name: ESPHome authors
+github_username: esphome
+has_cli: false
+initial_commit: true
+is_django_package: false
+open_source_license: Apache Software License 2.0
+package_name: esphome_glyphsets
+project_name: esphome-glyphsets
+project_short_description: A lightweight version of glyphsets for ESPHome
+project_slug: esphome-glyphsets
+run_uv_sync: true
+setup_github: true
+setup_pre_commit: true
+
