@@ -4,7 +4,7 @@ requires = [ "setuptools" ]
 
 [project]
 name = "esphome-glyphsets"
-version = "0.0.1"
+version = "0.1.0"
 description = "A lightweight version of glyphsets for ESPHome"
 readme = "README.md"
 license = { text = "Apache Software License 2.0" }
