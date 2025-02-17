@@ -72,6 +72,12 @@ lint.per-file-ignores."tests/**/*" = [
 ]
 lint.isort.known-first-party = [ "esphome_glyphsets", "tests" ]
 
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+"*" = ["*.yaml", "*.nam"]
+
 [tool.pytest.ini_options]
 addopts = """\
     -v
