@@ -46,6 +46,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          submodules: true
       - uses: actions/setup-python@v5
         id: setup-python
         with:
@@ -78,6 +80,7 @@ jobs:
         with:
           fetch-depth: 0
           ref: ${{ github.sha }}
+          submodules: true
 
       - name: Checkout commit for release
         run: |
