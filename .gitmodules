@@ -1,0 +1,3 @@
+[submodule "src/esphome_glyphsets/glyphsets"]
+	path = src/esphome_glyphsets/glyphsets
+	url = https://github.com/googlefonts/glyphsets/
