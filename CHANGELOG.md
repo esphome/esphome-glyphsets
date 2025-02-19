@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.2.0 (2025-02-19)
+
+### Features
+
+- Simplify unicodes_per_glyphset code (#4) ([`f3a7d05`](https://github.com/esphome/esphome-glyphsets/commit/f3a7d0533365e8ecb8c7180823ebb2a13557a678))
+
 ## v0.1.0 (2025-02-17)
 
 ### Features
