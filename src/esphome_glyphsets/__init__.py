@@ -22,10 +22,9 @@ def unicodes_per_glyphset(glyphset_name: str) -> list[int]:
     nam_path = GLYPHSETS_NAM_PATH / f"{glyphset_name}.nam"
     if not nam_path.exists():
         return []
-    return sorted(
-        {
-            int(line.partition(" ")[0][2:], 16)
-            for line in nam_path.read_text().splitlines()
-            if line.startswith("0x")
-        }
-    )
+    unicodes = {
+        int(line.partition(" ")[0][2:], 16)
+        for line in nam_path.read_text().splitlines()
+        if line.startswith("0x")
+    }
+    return sorted(unicodes)
