@@ -64,12 +64,40 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
 
+  release-dry-run:
+    needs:
+      - test
+      - lint
+      - commitlint
+
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          fetch-depth: 0
+          ref: ${{ github.sha }}
+          submodules: true
+
+      - name: Checkout commit for release
+        run: |
+          git checkout -B ${{ github.ref_name }} ${{ github.sha }}
+
+      # Do a dry run of PSR
+      - name: Test release
+        uses: python-semantic-release/python-semantic-release@0dc72ac9058a62054a45f6344c83a423d7f906a8 # v9.21.1
+        with:
+          root_options: --noop
+          github_token: noop
+
   release:
     needs:
       - test
       - lint
       - commitlint
 
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     environment: release
     concurrency: release
@@ -89,19 +117,9 @@ jobs:
         run: |
           git checkout -B ${{ github.ref_name }} ${{ github.sha }}
 
-      # Do a dry run of PSR
-      - name: Test release
-        uses: python-semantic-release/python-semantic-release@0dc72ac9058a62054a45f6344c83a423d7f906a8 # v9.21.1
-        if: github.ref_name != 'main'
-        with:
-          root_options: --noop
-          github_token: noop
-
-      # On main branch: actual PSR + upload to PyPI & GitHub
       - name: Release
         uses: python-semantic-release/python-semantic-release@0dc72ac9058a62054a45f6344c83a423d7f906a8 # v9.21.1
         id: release
-        if: github.ref_name == 'main'
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
