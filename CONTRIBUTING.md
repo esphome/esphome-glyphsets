@@ -112,6 +112,6 @@ $ pytest tests
 
 Releases are drafted automatically by [release-drafter](https://github.com/release-drafter/release-drafter) on every push to `main`. The next version is worked out from the labels on the merged pull requests: `breaking` is a major bump, `enhancement` is a minor bump, and anything else is a patch. The same workflow commits the new version to `pyproject.toml`, `src/esphome_glyphsets/__init__.py` and `uv.lock` as `esphome[bot]`.
 
-To release, publish the draft on the [releases page](https://github.com/esphome/esphome-glyphsets/releases). The Release workflow then builds the package and uploads it to PyPI and the release.
+To release, publish the draft on the [releases page](https://github.com/esphome-libs/esphome-glyphsets/releases). The Release workflow then builds the package and uploads it to PyPI and the release.
 
-[gh-issues]: https://github.com/esphome/esphome-glyphsets/issues
+[gh-issues]: https://github.com/esphome-libs/esphome-glyphsets/issues
