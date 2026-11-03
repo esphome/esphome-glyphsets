@@ -66,27 +66,25 @@ Ready to contribute? Here's how to set yourself up for local development.
    $ uv run pytest
    ```
 
-6. Linting is done through [pre-commit](https://pre-commit.com). Provided you have the tool installed globally, you can run them all as one-off:
+6. Linting is done through [prek](https://prek.j178.dev), a fast pre-commit hook runner configured in `prek.toml`. It is part of the dev dependencies, so after `uv sync` you can run all the hooks as a one-off:
 
    ```shell
-   $ pre-commit run -a
+   $ uv run prek run -a
    ```
 
    Or better, install the hooks once and have them run automatically each time you commit:
 
    ```shell
-   $ pre-commit install
+   $ uv run prek install
    ```
 
 7. Commit your changes and push your branch to GitHub:
 
    ```shell
    $ git add .
-   $ git commit -m "feat(something): your detailed description of your changes"
+   $ git commit -m "Your detailed description of your changes"
    $ git push origin name-of-your-bugfix-or-feature
    ```
-
-   Note: the commit message should follow [the conventional commits](https://www.conventionalcommits.org). We run [`commitlint` on CI](https://github.com/marketplace/actions/commit-linter) to validate it, and if you've installed pre-commit hooks at the previous step, the message will be checked at commit time.
 
 8. Submit a pull request through the GitHub website or using the GitHub CLI (if you have it installed):
 
@@ -112,6 +110,8 @@ $ pytest tests
 
 ## Making a new release
 
-The deployment should be automated and can be triggered from the Semantic Release workflow in GitHub. The next version will be based on [the commit logs](https://python-semantic-release.readthedocs.io/en/latest/concepts/commit_parsing.html). This is done by [python-semantic-release](https://python-semantic-release.readthedocs.io/en/latest/index.html) via a GitHub action.
+Releases are drafted automatically by [release-drafter](https://github.com/release-drafter/release-drafter) on every push to `main`. The next version is worked out from the labels on the merged pull requests: `breaking` is a major bump, `enhancement` is a minor bump, and anything else is a patch. The same workflow commits the new version to `pyproject.toml`, `src/esphome_glyphsets/__init__.py` and `uv.lock` as `esphome[bot]`.
+
+To release, publish the draft on the [releases page](https://github.com/esphome/esphome-glyphsets/releases). The Release workflow then builds the package and uploads it to PyPI and the release.
 
 [gh-issues]: https://github.com/esphome/esphome-glyphsets/issues
