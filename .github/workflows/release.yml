@@ -15,7 +15,9 @@ jobs:
   release:
     name: Publish package to PyPI
     runs-on: ubuntu-latest
-    environment: release
+    environment:
+      name: release
+      url: ${{ github.event.release.html_url }}
     permissions:
       contents: read
       id-token: write
