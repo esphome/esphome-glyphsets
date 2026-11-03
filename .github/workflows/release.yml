@@ -9,6 +9,8 @@ on:
     types:
       - published
 
+permissions: {}
+
 jobs:
   release:
     name: Publish package to PyPI
