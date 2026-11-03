@@ -32,6 +32,9 @@ jobs:
         os:
           - ubuntu-latest
     runs-on: ${{ matrix.os }}
+    permissions:
+      contents: read
+      id-token: write
     steps:
       - name: Check out repository
         uses: actions/checkout@v7.0.1
@@ -52,3 +55,5 @@ jobs:
         shell: bash
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v7.1.1
+        with:
+          use_oidc: true
