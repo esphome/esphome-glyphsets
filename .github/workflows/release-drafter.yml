@@ -26,7 +26,9 @@ jobs:
   release-drafter:
     name: Update draft release and bump version
     runs-on: ubuntu-latest
-    environment: release-drafter
+    environment:
+      name: release-drafter
+      url: ${{ steps.release-draft.outputs.html_url }}
     steps:
       - name: Generate a token
         id: generate-token
