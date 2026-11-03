@@ -40,8 +40,8 @@ jobs:
       - name: Draft release
         id: release-draft
         uses: release-drafter/release-drafter@v7.10.0
-        env:
-          GITHUB_TOKEN: ${{ steps.generate-token.outputs.token }}
+        with:
+          token: ${{ steps.generate-token.outputs.token }}
 
       # release-drafter has just rewritten the body, which brings back the
       # ASSETS_PENDING notice: the draft now says it has no build, so make

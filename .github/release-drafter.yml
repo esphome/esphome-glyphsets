@@ -1,32 +1,30 @@
 name-template: "v$RESOLVED_VERSION"
 tag-template: "v$RESOLVED_VERSION"
-exclude-labels:
-  - "nochangelog"
 categories:
+  - type: "pre-exclude"
+    when:
+      label: "nochangelog"
   - title: "Breaking Changes"
-    labels:
-      - "breaking"
+    semver-increment: "major"
+    exclusive: true
+    when:
+      label: "breaking"
   - title: "Dependencies"
+    semver-increment: "patch"
     collapse-after: 1
-    labels:
-      - "dependencies"
-      - "github_actions"
-
-version-resolver:
-  major:
-    labels:
-      - "breaking"
-  minor:
-    labels:
-      - "enhancement"
-  patch:
-    labels:
-      - "bug"
-      - "dependencies"
-      - "github_actions"
-      - "documentation"
-      - "tests"
-  default: patch
+    exclusive: true
+    when:
+      labels:
+        - "dependencies"
+        - "github_actions"
+  - title: "Other Changes"
+  - type: "version-resolver"
+    semver-increment: "minor"
+    when:
+      label: "enhancement"
+  # Everything else is a patch release.
+  - type: "version-resolver"
+    semver-increment: "patch"
 
 template: |
   > [!CAUTION]
