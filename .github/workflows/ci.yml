@@ -52,5 +52,3 @@ jobs:
         shell: bash
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v7.1.1
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
