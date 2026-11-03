@@ -1,0 +1,40 @@
+name-template: "v$RESOLVED_VERSION"
+tag-template: "v$RESOLVED_VERSION"
+exclude-labels:
+  - "nochangelog"
+categories:
+  - title: "Breaking Changes"
+    labels:
+      - "breaking"
+  - title: "Dependencies"
+    collapse-after: 1
+    labels:
+      - "dependencies"
+      - "github_actions"
+
+version-resolver:
+  major:
+    labels:
+      - "breaking"
+  minor:
+    labels:
+      - "enhancement"
+  patch:
+    labels:
+      - "bug"
+      - "dependencies"
+      - "github_actions"
+      - "documentation"
+      - "tests"
+  default: patch
+
+template: |
+  > [!CAUTION]
+  > **DO NOT PUBLISH THIS RELEASE YET!**
+  > The package has not been built and attached. Wait for the Release Drafter
+  > workflow to finish and this notice to be removed before publishing.
+  <!-- ASSETS_PENDING -->
+
+  ## What's Changed
+
+  $CHANGES

@@ -11,15 +11,12 @@ license = { text = "Apache Software License 2.0" }
 authors = [
   { name = "ESPHome authors", email = "hello@openhomefoundation.org" },
 ]
-requires-python = ">=3.9"
+requires-python = ">=3.12"
 classifiers = [
   "Development Status :: 2 - Pre-Alpha",
   "Intended Audience :: Developers",
   "Natural Language :: English",
   "Operating System :: OS Independent",
-  "Programming Language :: Python :: 3.9",
-  "Programming Language :: Python :: 3.10",
-  "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
   "Topic :: Software Development :: Libraries",
@@ -28,17 +25,20 @@ classifiers = [
 dependencies = [
 ]
 urls."Bug Tracker" = "https://github.com/esphome/esphome-glyphsets/issues"
-urls.Changelog = "https://github.com/esphome/esphome-glyphsets/blob/main/CHANGELOG.md"
+urls.Releases = "https://github.com/esphome/esphome-glyphsets/releases"
 urls.repository = "https://github.com/esphome/esphome-glyphsets"
 
 [dependency-groups]
 dev = [
+  "prek>=0.5.9",
   "pytest>=8,<9",
   "pytest-cov>=6,<7",
+  "ruff==0.17.2",
+  "ty==0.0.96",
 ]
 
 [tool.ruff]
-target-version = "py39"
+target-version = "py312"
 line-length = 88
 lint.select = [
   "B",   # flake8-bugbear
@@ -61,7 +61,6 @@ lint.ignore = [
   "D401", # First line of docstring should be in imperative mood
 ]
 lint.per-file-ignores."conftest.py" = [ "D100" ]
-lint.per-file-ignores."setup.py" = [ "D100" ]
 lint.per-file-ignores."tests/**/*" = [
   "D100",
   "D101",
@@ -101,54 +100,5 @@ exclude_lines = [
   'if __name__ == "__main__":',
 ]
 
-[tool.mypy]
-check_untyped_defs = true
-disallow_any_generics = true
-disallow_incomplete_defs = true
-disallow_untyped_defs = true
-mypy_path = "src/"
-no_implicit_optional = true
-show_error_codes = true
-warn_unreachable = true
-warn_unused_ignores = true
-exclude = [
-  'setup.py',
-]
-
-[[tool.mypy.overrides]]
-module = "tests.*"
-allow_untyped_defs = true
-
-[tool.semantic_release]
-version_toml = [ "pyproject.toml:project.version" ]
-version_variables = [
-  "src/esphome_glyphsets/__init__.py:__version__",
-]
-build_command = """
-pip install uv
-uv lock
-git add uv.lock
-uv build
-"""
-
-[tool.semantic_release.changelog]
-exclude_commit_patterns = [
-  '''chore(?:\([^)]*?\))?: .+''',
-  '''ci(?:\([^)]*?\))?: .+''',
-  '''refactor(?:\([^)]*?\))?: .+''',
-  '''style(?:\([^)]*?\))?: .+''',
-  '''test(?:\([^)]*?\))?: .+''',
-  '''build\((?!deps\): .+)''',
-  '''Merged? .*''',
-  '''Initial [Cc]ommit.*''', # codespell:ignore
-]
-
-[tool.semantic_release.changelog.environment]
-keep_trailing_newline = true
-
-[tool.semantic_release.branches.main]
-match = "main"
-
-[tool.semantic_release.branches.noop]
-match = "(?!main$)"
-prerelease = true
+[tool.ty.environment]
+root = [ "src", "." ]

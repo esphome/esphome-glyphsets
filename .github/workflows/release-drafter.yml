@@ -1,0 +1,199 @@
+name: Release Drafter
+
+# Drafts the next release, bumps the version files on main, and attaches the
+# built distributions to the draft. Releases are immutable once published, so
+# the build has to be on the draft beforehand; the Release workflow only
+# publishes those files.
+#
+# The version bump is pushed with an App token, which starts this workflow
+# again on the bumped commit. The run that makes the bump stops after
+# committing, and the follow-up run builds from the committed tree, so the
+# attached files always match the commit the release tag will point at.
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: release-drafter
+  cancel-in-progress: false
+
+jobs:
+  release-drafter:
+    name: Update draft release and bump version
+    runs-on: ubuntu-latest
+    environment: release-drafter
+    steps:
+      - name: Generate a token
+        id: generate-token
+        uses: actions/create-github-app-token@v3.3.0
+        with:
+          client-id: ${{ vars.ESPHOME_GITHUB_APP_CLIENT_ID }}
+          private-key: ${{ secrets.ESPHOME_GITHUB_APP_PRIVATE_KEY }}
+          permission-contents: write
+          permission-pull-requests: read
+
+      - name: Draft release
+        id: release-draft
+        uses: release-drafter/release-drafter@v7.10.0
+        env:
+          GITHUB_TOKEN: ${{ steps.generate-token.outputs.token }}
+
+      # release-drafter has just rewritten the body, which brings back the
+      # ASSETS_PENDING notice: the draft now says it has no build, so make
+      # that true. Anything still attached is from an earlier build.
+      - name: Delete stale assets from the draft release
+        env:
+          GH_TOKEN: ${{ steps.generate-token.outputs.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_ID: ${{ steps.release-draft.outputs.id }}
+        run: |
+          set -euo pipefail
+          if [[ -z "${RELEASE_ID}" ]]; then
+            echo "::error::release-drafter did not report a release id"
+            exit 1
+          fi
+          if ! release=$(gh api "repos/${GH_REPO}/releases/${RELEASE_ID}"); then
+            echo "::error::Failed to fetch release ${RELEASE_ID}"
+            exit 1
+          fi
+          # Never delete assets from a published release.
+          if [[ "$(jq -r '.draft' <<< "${release}")" != "true" ]]; then
+            echo "::error::Release ${RELEASE_ID} is not a draft; refusing to delete its assets"
+            exit 1
+          fi
+          if ! asset_ids=$(gh api "repos/${GH_REPO}/releases/${RELEASE_ID}/assets" \
+              --paginate --jq '.[].id'); then
+            echo "::error::Failed to list assets for release ${RELEASE_ID}"
+            exit 1
+          fi
+          if [[ -z "${asset_ids}" ]]; then
+            echo "Draft release ${RELEASE_ID} has no assets to delete"
+            exit 0
+          fi
+          while read -r id; do
+            echo "Deleting asset ${id}"
+            gh api "repos/${GH_REPO}/releases/assets/${id}" --method DELETE --silent
+          done <<< "${asset_ids}"
+
+      - name: Check out repository
+        uses: actions/checkout@v7.0.1
+        with:
+          token: ${{ steps.generate-token.outputs.token }}
+          submodules: true
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v10.3.3
+
+      - name: Set version
+        env:
+          TAG: ${{ steps.release-draft.outputs.tag_name }}
+        run: |
+          set -euo pipefail
+          version="${TAG#v}"
+          sed -i -E "s/^version = \".*\"/version = \"${version}\"/" pyproject.toml
+          sed -i -E "s/^__version__ = \".*\"/__version__ = \"${version}\"/" src/esphome_glyphsets/__init__.py
+          # A silent no-op would leave the version files out of step with the release.
+          grep -qx "version = \"${version}\"" pyproject.toml
+          grep -qx "__version__ = \"${version}\"" src/esphome_glyphsets/__init__.py
+          uv lock
+
+      # Commit via the GraphQL API so the commit is signed/verified as the GitHub App.
+      - name: Commit changes
+        id: commit
+        uses: actions/github-script@v9.0.0
+        env:
+          TAG: ${{ steps.release-draft.outputs.tag_name }}
+        with:
+          github-token: ${{ steps.generate-token.outputs.token }}
+          script: |
+            const fs = require('fs');
+            const { execSync } = require('child_process');
+
+            const changed = execSync('git diff --name-only', { encoding: 'utf8' })
+              .split('\n')
+              .map(s => s.trim())
+              .filter(Boolean);
+
+            if (changed.length === 0) {
+              core.info('No changes to commit.');
+              core.setOutput('committed', 'false');
+              return;
+            }
+
+            const additions = changed.map(path => ({
+              path,
+              contents: fs.readFileSync(path).toString('base64'),
+            }));
+
+            const expectedHeadOid = execSync('git rev-parse HEAD', { encoding: 'utf8' }).trim();
+            const branchName = context.ref.replace(/^refs\/heads\//, '');
+
+            const result = await github.graphql(`
+              mutation($input: CreateCommitOnBranchInput!) {
+                createCommitOnBranch(input: $input) {
+                  commit { oid url }
+                }
+              }
+            `, {
+              input: {
+                branch: {
+                  repositoryNameWithOwner: `${context.repo.owner}/${context.repo.repo}`,
+                  branchName,
+                },
+                message: { headline: `Bump version to ${process.env.TAG.replace(/^v/, '')}` },
+                expectedHeadOid,
+                fileChanges: { additions },
+              },
+            });
+
+            core.setOutput('committed', 'true');
+            core.info(`Created signed commit ${result.createCommitOnBranch.commit.oid}`);
+            core.info(result.createCommitOnBranch.commit.url);
+
+      # When a bump was committed this run stops here: the push starts a new
+      # run which builds from the committed tree.
+      - name: Build package
+        if: steps.commit.outputs.committed != 'true'
+        run: uv build
+
+      - name: Upload distributions to the draft release
+        if: steps.commit.outputs.committed != 'true'
+        env:
+          GH_TOKEN: ${{ steps.generate-token.outputs.token }}
+          GH_REPO: ${{ github.repository }}
+          TAG: ${{ steps.release-draft.outputs.tag_name }}
+        run: gh release upload "${TAG}" dist/*
+
+      # Re-send tag_name, name and target_commitish with the body: a PATCH to
+      # a draft without tag_name resets its tag to an untagged-* placeholder.
+      - name: Remove the assets pending notice
+        if: steps.commit.outputs.committed != 'true'
+        env:
+          GH_TOKEN: ${{ steps.generate-token.outputs.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_ID: ${{ steps.release-draft.outputs.id }}
+        run: |
+          set -euo pipefail
+          if ! release=$(gh api "repos/${GH_REPO}/releases/${RELEASE_ID}"); then
+            echo "::error::Failed to fetch release ${RELEASE_ID}"
+            exit 1
+          fi
+          if [[ "$(jq -r '.draft' <<< "${release}")" != "true" ]]; then
+            echo "::error::Release ${RELEASE_ID} is not a draft"
+            exit 1
+          fi
+          if [[ "$(jq -r '.tag_name' <<< "${release}")" == untagged-* ]]; then
+            echo "::error::Release ${RELEASE_ID} has a placeholder tag"
+            exit 1
+          fi
+          body=$(jq -r '.body // ""' <<< "${release}" \
+            | perl -0pe 's/> \[!CAUTION\].*?<!-- ASSETS_PENDING -->\n*//s')
+          jq --arg body "${body}" \
+            '{tag_name, name, target_commitish, prerelease, draft: true, body: $body}' \
+            <<< "${release}" \
+            | gh api -X PATCH "repos/${GH_REPO}/releases/${RELEASE_ID}" --input - --silent

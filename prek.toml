@@ -1,0 +1,58 @@
+# Configuration file for `prek`, a git hook framework written in Rust.
+# See https://prek.j178.dev for more information.
+#:schema https://www.schemastore.org/prek.json
+
+exclude = ".copier-answers.yml|.all-contributorsrc|project"
+default_stages = ["pre-commit"]
+
+[[repos]]
+repo = "https://github.com/pre-commit/pre-commit-hooks"
+rev = "v6.0.0"
+hooks = [
+  { id = "debug-statements" },
+  { id = "check-builtin-literals" },
+  { id = "check-case-conflict" },
+  { id = "check-docstring-first" },
+  { id = "check-json" },
+  { id = "check-toml" },
+  { id = "check-xml" },
+  { id = "check-yaml" },
+  { id = "detect-private-key" },
+  { id = "end-of-file-fixer" },
+  { id = "trailing-whitespace" }
+]
+
+[[repos]]
+repo = "https://github.com/tox-dev/pyproject-fmt"
+rev = "v2.30.3"
+hooks = [
+  { id = "pyproject-fmt" }
+]
+
+[[repos]]
+repo = "https://github.com/astral-sh/uv-pre-commit"
+rev = "0.13.5"
+hooks = [
+  { id = "uv-lock" }
+]
+
+[[repos]]
+repo = "https://github.com/astral-sh/ruff-pre-commit"
+rev = "v0.17.2"
+hooks = [
+  {
+    id = "ruff",
+    args = [
+      "--fix",
+      "--exit-non-zero-on-fix"
+    ]
+  },
+  { id = "ruff-format" }
+]
+
+[[repos]]
+repo = "https://github.com/astral-sh/ty-pre-commit"
+rev = "v0.0.96"
+hooks = [
+  { id = "ty" }
+]
