@@ -6,7 +6,7 @@ copyright_year: '2025'
 documentation: false
 email: hello@openhomefoundation.org
 full_name: ESPHome authors
-github_username: esphome
+github_username: esphome-libs
 has_cli: false
 initial_commit: true
 is_django_package: false

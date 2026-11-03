@@ -24,9 +24,9 @@ classifiers = [
 
 dependencies = [
 ]
-urls."Bug Tracker" = "https://github.com/esphome/esphome-glyphsets/issues"
-urls.Releases = "https://github.com/esphome/esphome-glyphsets/releases"
-urls.repository = "https://github.com/esphome/esphome-glyphsets"
+urls."Bug Tracker" = "https://github.com/esphome-libs/esphome-glyphsets/issues"
+urls.Releases = "https://github.com/esphome-libs/esphome-glyphsets/releases"
+urls.repository = "https://github.com/esphome-libs/esphome-glyphsets"
 
 [dependency-groups]
 dev = [
